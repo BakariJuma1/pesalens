@@ -4,22 +4,38 @@ from typing import List, Dict, Tuple
 
 from models.categories import CATEGORY_PATTERNS
 
-# Use simple text extraction settings to reduce memory usage on free tier
-_TEXT_KWARGS = {
-    "x_tolerance": 3,
-    "y_tolerance": 3,
-    "layout": False,
-}
+_TEXT_KWARGS = {"x_tolerance": 3, "y_tolerance": 3, "layout": False}
+
+# Current Safaricom format: RECEIPT YYYY-MM-DD HH:MM:SS DESCRIPTION Completed AMOUNT BALANCE
+_PATTERN_NEW = re.compile(
+    r"([A-Z0-9]{6,})\s+"           # receipt number
+    r"(\d{4}-\d{2}-\d{2})\s+"      # date YYYY-MM-DD
+    r"(\d{2}:\d{2}:\d{2})\s+"      # time
+    r"(.+?)\s+"                     # description (non-greedy, single line)
+    r"Completed\s+"                 # status column
+    r"(-?[\d,]+\.\d{2})\s+"        # amount (negative = money out)
+    r"([\d,]+\.\d{2})",            # balance
+    re.MULTILINE,
+)
+
+# Legacy format: DD/MM/YYYY HH:MM:SS RECEIPT DESCRIPTION AMOUNT BALANCE
+_PATTERN_OLD = re.compile(
+    r"(\d{2}/\d{2}/\d{4})\s+"
+    r"(\d{2}:\d{2}:\d{2})\s+"
+    r"([A-Z0-9]+)\s+"
+    r"(.+?)\s+"
+    r"([\d,]+\.\d{2})\s+"
+    r"([\d,]+\.\d{2})",
+    re.MULTILINE,
+)
 
 
 def parse_pdf(pdf_bytes: bytes, password: str = "") -> Tuple[List[Dict], str]:
-    """Extract transactions from M-Pesa PDF. Returns (transactions, method)."""
-    import pdfplumber
-
     open_kwargs = {"password": password} if password else {}
     pages_text = []
 
     try:
+        import pdfplumber
         with pdfplumber.open(io.BytesIO(pdf_bytes), **open_kwargs) as pdf:
             for page in pdf.pages:
                 try:
@@ -27,7 +43,6 @@ def parse_pdf(pdf_bytes: bytes, password: str = "") -> Tuple[List[Dict], str]:
                 except Exception:
                     text = page.extract_text() or ""
                 pages_text.append(text)
-                # Release page resources immediately
                 page.flush_cache()
     except Exception as exc:
         err = str(exc).lower()
@@ -39,38 +54,46 @@ def parse_pdf(pdf_bytes: bytes, password: str = "") -> Tuple[List[Dict], str]:
 
     full_text = "\n".join(pages_text)
 
-    transactions = _extract_regex(full_text)
+    transactions = _extract_new_format(full_text)
     if transactions:
         return transactions, "regex"
 
-    # Gemini fallback — imported lazily to avoid hard dependency at startup
+    transactions = _extract_old_format(full_text)
+    if transactions:
+        return transactions, "regex"
+
     from service.gemini import extract_transactions_ai
     transactions = extract_transactions_ai(full_text)
     return transactions, "ai"
 
 
-def _extract_regex(text: str) -> List[Dict]:
-    """
-    M-Pesa statements typically have rows like:
-    DD/MM/YYYY  HH:MM:SS  <Receipt>  <Description>  <Amount>  <Balance>
-    This regex targets that layout. Returns empty list if no matches.
-    """
-    pattern = re.compile(
-        r"(\d{2}/\d{2}/\d{4})\s+"          # date
-        r"(\d{2}:\d{2}:\d{2})\s+"           # time
-        r"([A-Z0-9]+)\s+"                    # receipt / ref
-        r"(.+?)\s+"                          # description (non-greedy)
-        r"([\d,]+\.\d{2})\s+"               # amount
-        r"([\d,]+\.\d{2})",                  # balance
-        re.MULTILINE,
-    )
-
+def _extract_new_format(text: str) -> List[Dict]:
     transactions = []
-    for match in pattern.finditer(text):
+    for match in _PATTERN_NEW.finditer(text):
+        ref, date, time, description, amount_str, balance_str = match.groups()
+        amount = float(amount_str.replace(",", ""))
+        balance = float(balance_str.replace(",", ""))
+        tx_type = "in" if amount >= 0 else "out"
+        transactions.append({
+            "date": date,
+            "time": time,
+            "ref": ref,
+            "description": description.strip(),
+            "amount": abs(amount),
+            "balance": balance,
+            "type": tx_type,
+            "category": _categorise(description, tx_type),
+        })
+    return transactions
+
+
+def _extract_old_format(text: str) -> List[Dict]:
+    transactions = []
+    for match in _PATTERN_OLD.finditer(text):
         date, time, ref, description, amount_str, balance_str = match.groups()
         amount = float(amount_str.replace(",", ""))
         balance = float(balance_str.replace(",", ""))
-        tx_type = _infer_type(description)
+        tx_type = _infer_type_from_description(description)
         transactions.append({
             "date": _normalise_date(date),
             "time": time,
@@ -81,14 +104,12 @@ def _extract_regex(text: str) -> List[Dict]:
             "type": tx_type,
             "category": _categorise(description, tx_type),
         })
-
     return transactions
 
 
-def _infer_type(description: str) -> str:
+def _infer_type_from_description(description: str) -> str:
     desc = description.lower()
-    incoming_keywords = ["received from", "money in", "reversal", "deposit", "credit"]
-    for kw in incoming_keywords:
+    for kw in ["received from", "money in", "reversal", "deposit", "credit"]:
         if kw in desc:
             return "in"
     return "out"
@@ -108,7 +129,6 @@ def _categorise(description: str, tx_type: str) -> str:
 
 
 def _normalise_date(date_str: str) -> str:
-    """Convert DD/MM/YYYY → YYYY-MM-DD."""
     parts = date_str.split("/")
     if len(parts) == 3:
         return f"{parts[2]}-{parts[1]}-{parts[0]}"

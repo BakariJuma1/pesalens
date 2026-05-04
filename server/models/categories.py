@@ -9,13 +9,57 @@ CATEGORIES = [
     "Other",
 ]
 
-# Keywords used to classify transactions into categories
 CATEGORY_PATTERNS = {
-    "Send Money": ["send money", "transfer to", "sent to"],
-    "Pay Bill": ["pay bill", "paybill", "business no", "account no"],
-    "Buy Goods": ["buy goods", "merchant", "till no", "purchase"],
-    "Airtime": ["airtime", "bundle", "data bundle", "safaricom"],
-    "Withdraw": ["withdraw", "agent", "cash out", "atm"],
-    "Deposit": ["deposit", "cash in"],
-    "Money In": ["received from", "money in", "credit"],
+    "Send Money": [
+        "customer transfer to",
+        "transfer to",
+        "send money",
+        "sent to",
+        "customer payment to small business",
+        "transfer of funds charge",
+    ],
+    "Pay Bill": [
+        "pay bill online to",
+        "pay bill charge",
+        "pay bill",
+        "paybill",
+        "business no",
+        "account no",
+    ],
+    "Buy Goods": [
+        "merchant payment online",
+        "merchant payment",
+        "pay merchant charge",
+        "pay merchant",
+        "buy goods",
+        "till no",
+    ],
+    "Airtime": [
+        "customer bundle purchase",
+        "bundle purchase",
+        "recharge for customer",
+        "airtime purchase",
+        "airtime",
+        "safaricom data",
+        "safaricom offers",
+        "data bundle",
+    ],
+    "Withdraw": [
+        "customer withdrawal at agent",
+        "customer withdrawal",
+        "withdrawal charge",
+        "withdrawal",
+        "cash out",
+        "atm",
+    ],
+    "Deposit": [
+        "agent deposit",
+        "cash in",
+    ],
+    "Money In": [
+        "funds received from",
+        "received from",
+        "money in",
+        "credit",
+    ],
 }
