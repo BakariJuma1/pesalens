@@ -1,7 +1,10 @@
 import os
 import json
+import logging
 import requests
 from typing import Dict, List
+
+logger = logging.getLogger(__name__)
 
 _GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
@@ -55,7 +58,8 @@ def generate_analysis(summary: Dict, categories: Dict, top_expenses: List) -> st
     try:
         prompt = _build_user_prompt(summary, categories, top_expenses)
         return _call_gemini(prompt)
-    except Exception:
+    except Exception as exc:
+        logger.error("Gemini analysis failed: %s", exc, exc_info=True)
         return _fallback_analysis(summary, categories)
 
 

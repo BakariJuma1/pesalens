@@ -1,7 +1,10 @@
+import logging
 from flask import Flask
 from flask_cors import CORS
 from config import Config
 from extensions import limiter
+
+logging.basicConfig(level=logging.INFO)
 
 
 def create_app():
