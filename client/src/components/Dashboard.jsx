@@ -5,12 +5,13 @@ import AIAnalysisCard from './AIAnalysisCard'
 import CategoryChart from './CategoryChart'
 import MonthlyChart from './MonthlyChart'
 import TopExpenses from './TopExpenses'
+import TopRecipients from './TopRecipients'
 import TransactionsTable from './TransactionsTable'
 import ShareCardModal from './ShareCardModal'
 
 export default function Dashboard({ data, onReset }) {
   const [showShare, setShowShare] = useState(false)
-  const { summary, categories, monthly, transactions, ai_analysis, top_expenses, parse_method } = data
+  const { summary, categories, monthly, transactions, ai_analysis, top_expenses, top_recipients, parse_method } = data
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,6 +61,7 @@ export default function Dashboard({ data, onReset }) {
         <CategoryChart categories={categories} />
         <MonthlyChart monthly={monthly} />
         <TopExpenses expenses={top_expenses} />
+        <TopRecipients recipients={top_recipients} />
         <TransactionsTable transactions={transactions} />
 
         <p className="text-center text-xs text-gray-400 pb-4">

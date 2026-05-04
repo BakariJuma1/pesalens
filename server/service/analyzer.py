@@ -17,6 +17,7 @@ def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
     monthly = _compute_monthly(transactions)
     top_expenses = _compute_top_expenses(transactions)
     ai_analysis = generate_analysis(summary, categories, top_expenses)
+    top_recipients = _compute_top_recipients(transactions)
 
     return {
         "success": True,
@@ -26,6 +27,7 @@ def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
         "transactions": transactions[:100],
         "ai_analysis": ai_analysis,
         "top_expenses": top_expenses,
+        "top_recipients": top_recipients,
         "parse_method": parse_method,
     }
 
@@ -78,3 +80,30 @@ def _compute_top_expenses(transactions: List[Dict]) -> List[Dict]:
         {"description": t["description"], "amount": t["amount"], "date": t.get("date", "")}
         for t in sorted_out[:5]
     ]
+
+
+import re as _re
+
+_RECIPIENT_RE = _re.compile(
+    r"(?:customer transfer to|transfer to|sent to)\s*[-–]?\s*\d+\s+(.+)",
+    _re.IGNORECASE,
+)
+
+
+def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
+    totals: Dict[str, Dict] = {}
+    for t in transactions:
+        if t.get("category") != "Send Money" or t["type"] != "out":
+            continue
+        desc = t.get("description", "")
+        m = _RECIPIENT_RE.search(desc)
+        name = m.group(1).strip().title() if m else desc.strip().title()
+        if not name:
+            continue
+        if name not in totals:
+            totals[name] = {"name": name, "total": 0.0, "count": 0}
+        totals[name]["total"] = round(totals[name]["total"] + t["amount"], 2)
+        totals[name]["count"] += 1
+
+    ranked = sorted(totals.values(), key=lambda x: x["total"], reverse=True)
+    return ranked[:10]
