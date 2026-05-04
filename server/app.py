@@ -13,9 +13,11 @@ def create_app():
 
     from routes.health import health_bp
     from routes.analyze import analyze_bp
+    from routes.debug import debug_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(analyze_bp)
+    app.register_blueprint(debug_bp)
 
     return app
 

@@ -5,8 +5,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/analyze': 'http://localhost:5000',
-      '/health': 'http://localhost:5000',
+      '/analyze': 'https://pesalens-ghto.onrender.com',
+      '/health': 'https://pesalens-ghto.onrender.com',
+      '/debug-pdf': 'https://pesalens-ghto.onrender.com',
     },
   },
 })
