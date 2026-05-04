@@ -4,18 +4,31 @@ from typing import List, Dict, Tuple
 
 from models.categories import CATEGORY_PATTERNS
 
+# Use simple text extraction settings to reduce memory usage on free tier
+_TEXT_KWARGS = {
+    "x_tolerance": 3,
+    "y_tolerance": 3,
+    "layout": False,
+}
+
 
 def parse_pdf(pdf_bytes: bytes, password: str = "") -> Tuple[List[Dict], str]:
     """Extract transactions from M-Pesa PDF. Returns (transactions, method)."""
     import pdfplumber
-    import pdfminer.pdfdocument as pdfdoc
-    import pdfminer.pdfparser as pdfparser
 
     open_kwargs = {"password": password} if password else {}
+    pages_text = []
 
     try:
         with pdfplumber.open(io.BytesIO(pdf_bytes), **open_kwargs) as pdf:
-            pages_text = [page.extract_text() or "" for page in pdf.pages]
+            for page in pdf.pages:
+                try:
+                    text = page.extract_text(**_TEXT_KWARGS) or ""
+                except Exception:
+                    text = page.extract_text() or ""
+                pages_text.append(text)
+                # Release page resources immediately
+                page.flush_cache()
     except Exception as exc:
         err = str(exc).lower()
         if "password" in err or "encrypt" in err or "decrypt" in err:
