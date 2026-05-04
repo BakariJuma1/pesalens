@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import time
 import requests
 from typing import Dict, List
 
@@ -33,7 +34,7 @@ _EXTRACTION_PROMPT = (
 )
 
 
-def _call_gemini(prompt: str) -> str:
+def _call_gemini(prompt: str, retries: int = 3) -> str:
     api_key = os.getenv("GEMINI_API_KEY", "")
     if not api_key:
         raise ValueError("No API key")
@@ -43,15 +44,24 @@ def _call_gemini(prompt: str) -> str:
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"maxOutputTokens": 512, "temperature": 0.4},
     }
-    resp = requests.post(
-        _GEMINI_URL,
-        params={"key": api_key},
-        json=payload,
-        timeout=30,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+    for attempt in range(retries):
+        resp = requests.post(
+            _GEMINI_URL,
+            params={"key": api_key},
+            json=payload,
+            timeout=30,
+        )
+        if resp.status_code == 429 and attempt < retries - 1:
+            wait = 15 * (attempt + 1)
+            logger.warning("Gemini rate limited — retrying in %ss (attempt %d/%d)", wait, attempt + 1, retries)
+            time.sleep(wait)
+            continue
+        resp.raise_for_status()
+        data = resp.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+    raise RuntimeError("Gemini rate limit not resolved after retries")
 
 
 def generate_analysis(summary: Dict, categories: Dict, top_expenses: List) -> str:
