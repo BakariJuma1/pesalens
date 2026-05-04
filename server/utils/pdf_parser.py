@@ -7,15 +7,16 @@ from models.categories import CATEGORY_PATTERNS
 _TEXT_KWARGS = {"x_tolerance": 3, "y_tolerance": 3, "layout": False}
 
 # Current Safaricom format: RECEIPT YYYY-MM-DD HH:MM:SS DESCRIPTION Completed AMOUNT BALANCE
+# DOTALL so (.+?) captures recipient names that wrap onto the next line in the PDF
 _PATTERN_NEW = re.compile(
     r"([A-Z0-9]{6,})\s+"           # receipt number
     r"(\d{4}-\d{2}-\d{2})\s+"      # date YYYY-MM-DD
     r"(\d{2}:\d{2}:\d{2})\s+"      # time
-    r"(.+?)\s+"                     # description (non-greedy, single line)
+    r"(.+?)\s+"                     # description (may span a continuation line)
     r"Completed\s+"                 # status column
     r"(-?[\d,]+\.\d{2})\s+"        # amount (negative = money out)
     r"([\d,]+\.\d{2})",            # balance
-    re.MULTILINE,
+    re.MULTILINE | re.DOTALL,
 )
 
 # Legacy format: DD/MM/YYYY HH:MM:SS RECEIPT DESCRIPTION AMOUNT BALANCE
@@ -74,11 +75,13 @@ def _extract_new_format(text: str) -> List[Dict]:
         amount = float(amount_str.replace(",", ""))
         balance = float(balance_str.replace(",", ""))
         tx_type = "in" if amount >= 0 else "out"
+        # Collapse any newlines that came from multi-line PDF cells
+        description = re.sub(r"\s+", " ", description).strip()
         transactions.append({
             "date": date,
             "time": time,
             "ref": ref,
-            "description": description.strip(),
+            "description": description,
             "amount": abs(amount),
             "balance": balance,
             "type": tx_type,

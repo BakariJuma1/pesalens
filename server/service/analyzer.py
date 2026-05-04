@@ -84,10 +84,23 @@ def _compute_top_expenses(transactions: List[Dict]) -> List[Dict]:
 
 import re as _re
 
-_RECIPIENT_RE = _re.compile(
-    r"(?:customer transfer to|transfer to|sent to)\s*[-–]?\s*\d+\s+(.+)",
+# Strip the transfer prefix then an optional phone number to get the recipient name.
+# Handles: "Customer Transfer to - 0712345678 JOHN DOE"
+#      and: "Customer Transfer to - JOHN DOE"  (no phone number)
+_TX_PREFIX_RE = _re.compile(
+    r"(?:customer transfer to|transfer to|sent to)\s*[-–]?\s*",
     _re.IGNORECASE,
 )
+_PHONE_PREFIX_RE = _re.compile(r"^(?:2547|2541|07|01)\d+\s*", _re.IGNORECASE)
+
+
+def _extract_recipient_name(desc: str) -> str:
+    name = _TX_PREFIX_RE.sub("", desc).strip()
+    name = _PHONE_PREFIX_RE.sub("", name).strip()
+    # Skip if nothing meaningful is left (just dashes, digits, or very short)
+    if not name or name in {"-", "–"} or len(name) < 2 or name.isdigit():
+        return ""
+    return name.title()
 
 
 def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
@@ -95,9 +108,7 @@ def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
     for t in transactions:
         if t.get("category") != "Send Money" or t["type"] != "out":
             continue
-        desc = t.get("description", "")
-        m = _RECIPIENT_RE.search(desc)
-        name = m.group(1).strip().title() if m else desc.strip().title()
+        name = _extract_recipient_name(t.get("description", ""))
         if not name:
             continue
         if name not in totals:
@@ -106,4 +117,4 @@ def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
         totals[name]["count"] += 1
 
     ranked = sorted(totals.values(), key=lambda x: x["total"], reverse=True)
-    return ranked[:10]
+    return ranked[:5]
