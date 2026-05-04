@@ -20,12 +20,13 @@ export default function App() {
     return () => controller.abort()
   }, [])
 
-  const handleUpload = async (file) => {
+  const handleUpload = async (file, password = '') => {
     setError(null)
     setView('loading')
 
     const formData = new FormData()
     formData.append('file', file)
+    if (password) formData.append('password', password)
 
     try {
       const res = await fetch(`${API_BASE}/analyze`, { method: 'POST', body: formData })

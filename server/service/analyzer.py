@@ -4,8 +4,8 @@ from utils.pdf_parser import parse_pdf
 from service.gemini import generate_analysis
 
 
-def analyze_statement(pdf_bytes: bytes) -> Dict:
-    transactions, parse_method = parse_pdf(pdf_bytes)
+def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
+    transactions, parse_method = parse_pdf(pdf_bytes, password=password)
 
     if len(transactions) < 5:
         raise ValueError(

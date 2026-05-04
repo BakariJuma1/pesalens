@@ -27,8 +27,10 @@ def analyze():
     if len(pdf_bytes) == 0:
         return jsonify({"success": False, "error": "Uploaded file is empty"}), 400
 
+    password = request.form.get("password", "").strip()
+
     try:
-        result = analyze_statement(pdf_bytes)
+        result = analyze_statement(pdf_bytes, password=password)
         return jsonify(_response_schema.dump(result))
     except ValueError as exc:
         return jsonify({"success": False, "error": str(exc)}), 422

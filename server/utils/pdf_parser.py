@@ -5,12 +5,24 @@ from typing import List, Dict, Tuple
 from models.categories import CATEGORY_PATTERNS
 
 
-def parse_pdf(pdf_bytes: bytes) -> Tuple[List[Dict], str]:
+def parse_pdf(pdf_bytes: bytes, password: str = "") -> Tuple[List[Dict], str]:
     """Extract transactions from M-Pesa PDF. Returns (transactions, method)."""
     import pdfplumber
+    import pdfminer.pdfdocument as pdfdoc
+    import pdfminer.pdfparser as pdfparser
 
-    with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-        pages_text = [page.extract_text() or "" for page in pdf.pages]
+    open_kwargs = {"password": password} if password else {}
+
+    try:
+        with pdfplumber.open(io.BytesIO(pdf_bytes), **open_kwargs) as pdf:
+            pages_text = [page.extract_text() or "" for page in pdf.pages]
+    except Exception as exc:
+        err = str(exc).lower()
+        if "password" in err or "encrypt" in err or "decrypt" in err:
+            raise ValueError(
+                "This PDF is password-protected. Enter the password Safaricom sent you via SMS (usually your ID number)."
+            )
+        raise
 
     full_text = "\n".join(pages_text)
 
