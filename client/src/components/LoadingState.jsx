@@ -47,6 +47,9 @@ export default function LoadingState() {
           <p className="text-gray-400 text-sm text-center">
             Your data never leaves this session. Processed in memory only.
           </p>
+          <p className="text-xs text-gray-300 text-center max-w-xs">
+            We're on the free tier. First run after inactivity can take up to 60 seconds.
+          </p>
         </div>
       </div>
     </div>
