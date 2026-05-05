@@ -65,9 +65,16 @@ def generate_analysis(
     top_expenses: List,
     balance_trend: Dict = None,
     avg_daily_spend: float = 0,
+    recurring_payments: List = None,
+    payday_info: Dict = None,
+    withdrawal_summary: Dict = None,
 ) -> str:
     try:
-        prompt = _build_user_prompt(summary, categories, top_expenses, balance_trend, avg_daily_spend)
+        prompt = _build_user_prompt(
+            summary, categories, top_expenses,
+            balance_trend, avg_daily_spend,
+            recurring_payments, payday_info, withdrawal_summary,
+        )
         return _call_groq(_SYSTEM_PROMPT, prompt, max_tokens=600)
     except Exception as exc:
         logger.error("Groq analysis failed: %s", exc, exc_info=True)
@@ -117,6 +124,9 @@ def _build_user_prompt(
     top_expenses: List,
     balance_trend: Dict = None,
     avg_daily_spend: float = 0,
+    recurring_payments: List = None,
+    payday_info: Dict = None,
+    withdrawal_summary: Dict = None,
 ) -> str:
     net_label = "saved" if summary["net"] >= 0 else "overspent"
     total_out = summary["total_out"] or 1
@@ -135,23 +145,42 @@ def _build_user_prompt(
         f"Total received: KES {summary['total_in']:,.0f}\n"
         f"Total spent: KES {summary['total_out']:,.0f}\n"
         f"Net: KES {abs(summary['net']):,.0f} ({net_label})\n"
-        f"Total transactions: {summary['total_transactions']}\n"
+        f"Transactions: {summary['total_transactions']}\n"
         f"Average daily spend: KES {avg_daily_spend:,.0f}\n"
     )
 
     if balance_trend:
         direction = "up" if balance_trend["change"] >= 0 else "down"
         prompt += (
-            f"Opening M-Pesa balance: KES {balance_trend['opening']:,.0f}\n"
-            f"Closing M-Pesa balance: KES {balance_trend['closing']:,.0f} "
-            f"({direction} KES {abs(balance_trend['change']):,.0f})\n"
+            f"Opening balance: KES {balance_trend['opening']:,.0f} | "
+            f"Closing: KES {balance_trend['closing']:,.0f} ({direction} KES {abs(balance_trend['change']):,.0f})\n"
         )
 
-    prompt += (
-        f"\nSpending by category:\n{cat_lines}\n\n"
-        f"Top 5 largest single transactions:\n{expense_lines}\n\n"
-        "Analyse my spending with the structure I gave you."
-    )
+    if withdrawal_summary and withdrawal_summary.get("total_withdrawn", 0) > 0:
+        prompt += (
+            f"Cash withdrawn: KES {withdrawal_summary['total_withdrawn']:,.0f} "
+            f"({withdrawal_summary['cash_percentage']}% of spending is untracked cash)\n"
+        )
+
+    if payday_info:
+        prompt += (
+            f"Biggest income day: {payday_info['payday_date']} "
+            f"(KES {payday_info['payday_amount']:,.0f} received)\n"
+            f"Spent in 7 days after payday: KES {payday_info['week_spend_after']:,.0f} "
+            f"({payday_info['velocity_pct']}% of that income)\n"
+        )
+
+    prompt += f"\nSpending by category:\n{cat_lines}\n\n"
+    prompt += f"Top 5 single transactions:\n{expense_lines}\n"
+
+    if recurring_payments:
+        rec_lines = "\n".join(
+            f"- {r['description']}: KES {r['avg_amount']:,.0f} avg, {r['count']} times across {r['months']} months"
+            for r in recurring_payments[:4]
+        )
+        prompt += f"\nDetected recurring payments:\n{rec_lines}\n"
+
+    prompt += "\nAnalyse my spending with the structure I gave you."
     return prompt
 
 
