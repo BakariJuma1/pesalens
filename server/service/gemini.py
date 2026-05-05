@@ -6,13 +6,11 @@ from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
-_GEMINI_URL = (
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-2.0-flash:generateContent"
-)
+_GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+_MODEL = "llama-3.3-70b-versatile"
 
 _SYSTEM_PROMPT = (
-    "You are a friendly, sharp Kenyan financial advisor. You speak plainly and warmly — "
+    "You are a friendly, sharp Kenyan financial advisor. You speak plainly and warmly, "
     "like a trusted friend who happens to understand money, not a bank or an app. "
     "You know M-Pesa inside out: send money, PayBill, buy goods, Fuliza, till numbers, "
     "Safaricom bundles, and the real ways Kenyans manage money day-to-day.\n\n"
@@ -20,7 +18,7 @@ _SYSTEM_PROMPT = (
     "- Always use the actual numbers from the data. Never be vague.\n"
     "- Reference specific patterns you notice (same number every week = likely rent/chama).\n"
     "- Use plain English. No jargon. Shorten amounts: KES 12,400 not KES 12,400.00.\n"
-    "- Be warm but honest. If spending is high, say so — kindly.\n"
+    "- Be warm but honest. If spending is high, say so, kindly.\n"
     "- End with exactly ONE practical tip tied directly to their data.\n"
     "- Keep the whole response under 200 words."
 )
@@ -33,57 +31,62 @@ _EXTRACTION_PROMPT = (
 )
 
 
-def _call_gemini(prompt: str) -> str:
-    api_key = os.getenv("GEMINI_API_KEY", "")
+def _call_groq(system: str, user: str, max_tokens: int = 512) -> str:
+    api_key = os.getenv("GROQ_API_KEY", "")
     if not api_key:
-        raise ValueError("No API key")
+        raise ValueError("No GROQ_API_KEY configured")
 
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
     payload = {
-        "system_instruction": {"parts": [{"text": _SYSTEM_PROMPT}]},
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"maxOutputTokens": 512, "temperature": 0.4},
+        "model": _MODEL,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        "max_tokens": max_tokens,
+        "temperature": 0.4,
     }
 
-    resp = requests.post(
-        _GEMINI_URL,
-        params={"key": api_key},
-        json=payload,
-        timeout=30,
-    )
+    resp = requests.post(_GROQ_URL, headers=headers, json=payload, timeout=30)
     if resp.status_code == 429:
-        raise RuntimeError("Gemini rate limit — falling back to summary")
+        raise RuntimeError("Groq rate limited")
     resp.raise_for_status()
-    data = resp.json()
-    return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    return resp.json()["choices"][0]["message"]["content"].strip()
 
 
 def generate_analysis(summary: Dict, categories: Dict, top_expenses: List) -> str:
     try:
         prompt = _build_user_prompt(summary, categories, top_expenses)
-        return _call_gemini(prompt)
+        return _call_groq(_SYSTEM_PROMPT, prompt, max_tokens=512)
     except Exception as exc:
-        logger.error("Gemini analysis failed: %s", exc, exc_info=True)
+        logger.error("Groq analysis failed: %s", exc, exc_info=True)
         return _fallback_analysis(summary, categories)
 
 
 def extract_transactions_ai(raw_text: str) -> List[Dict]:
-    api_key = os.getenv("GEMINI_API_KEY", "")
+    api_key = os.getenv("GROQ_API_KEY", "")
     if not api_key:
         return []
 
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
     payload = {
-        "contents": [{"parts": [{"text": _EXTRACTION_PROMPT + raw_text[:8000]}]}],
-        "generationConfig": {"maxOutputTokens": 4096, "temperature": 0.0},
+        "model": _MODEL,
+        "messages": [
+            {"role": "user", "content": _EXTRACTION_PROMPT + raw_text[:8000]},
+        ],
+        "max_tokens": 4096,
+        "temperature": 0.0,
     }
     try:
-        resp = requests.post(
-            _GEMINI_URL,
-            params={"key": api_key},
-            json=payload,
-            timeout=60,
-        )
+        resp = requests.post(_GROQ_URL, headers=headers, json=payload, timeout=60)
         resp.raise_for_status()
-        text = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+        text = resp.json()["choices"][0]["message"]["content"].strip()
 
         if text.startswith("```"):
             text = text.split("```")[1]
@@ -134,5 +137,5 @@ def _fallback_analysis(summary: Dict, categories: Dict) -> str:
         f"KES {summary['total_out']:,.0f}. You {net_label} "
         f"KES {abs(summary['net']):,.0f}. "
         f"Most of your spending went to {top_cat}. "
-        f"AI analysis is temporarily unavailable due to rate limiting. Try again in a few minutes."
+        f"AI analysis is temporarily unavailable. Try again in a few minutes."
     )
