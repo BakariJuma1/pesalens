@@ -498,10 +498,8 @@ def _is_individual(name: str) -> bool:
     return not any(kw in lower for kw in _BUSINESS_KEYWORDS)
 
 
-_DIRECT_SEND_RE = _re.compile(
-    r"^(?:customer transfer to|transfer to|sent to)", _re.IGNORECASE
-)
-_POCHI_RE = _re.compile(r"customer payment to small business", _re.IGNORECASE)
+_POCHI_RE  = _re.compile(r"customer payment to small business", _re.IGNORECASE)
+_CHARGE_RE = _re.compile(r"\bcharge\b|\bfee\b", _re.IGNORECASE)
 
 
 def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
@@ -510,7 +508,8 @@ def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
         if t.get("category") != "Send Money" or t["type"] != "out":
             continue
         desc = t.get("description", "")
-        if not _DIRECT_SEND_RE.match(desc):
+        # exclude Pochi payments (handled separately) and transaction charges
+        if _POCHI_RE.search(desc) or _CHARGE_RE.search(desc):
             continue
         name = _extract_recipient_name(desc)
         if not name or not _is_individual(name):
