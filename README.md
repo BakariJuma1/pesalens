@@ -1,5 +1,6 @@
 # M-Pesa Analyzer
 
+
 **Understand Your Money — No Account, No Storage, No Nonsense**
 
 M-Pesa Analyzer is a free, open-source web app that turns your Safaricom M-Pesa PDF statement into instant, AI-powered spending insights. Upload your statement, get a clear breakdown of where your money went, then close the tab. Nothing is ever saved.
