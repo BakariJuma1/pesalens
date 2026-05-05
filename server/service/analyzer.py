@@ -304,7 +304,7 @@ def _compute_send_money_frequency(transactions: List[Dict]) -> List[Dict]:
         if t.get("category") != "Send Money" or t["type"] != "out":
             continue
         name = _extract_recipient_name(t.get("description", ""))
-        if not name:
+        if not name or not _is_individual(name):
             continue
         if name not in freq:
             freq[name] = {"name": name, "count": 0, "total": 0.0}
@@ -466,16 +466,27 @@ def _extract_recipient_name(desc: str) -> str:
     return name.title()
 
 
+_BUSINESS_KEYWORDS = {
+    "pochi", "biashara", "agent", "till", "paybill", "business",
+    "limited", "ltd", "company", "enterprise", "shop", "store",
+}
+
+
+def _is_individual(name: str) -> bool:
+    lower = name.lower()
+    return not any(kw in lower for kw in _BUSINESS_KEYWORDS)
+
+
 def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
     totals: Dict[str, Dict] = {}
     for t in transactions:
         if t.get("category") != "Send Money" or t["type"] != "out":
             continue
         name = _extract_recipient_name(t.get("description", ""))
-        if not name:
+        if not name or not _is_individual(name):
             continue
         if name not in totals:
             totals[name] = {"name": name, "total": 0.0, "count": 0}
         totals[name]["total"] = round(totals[name]["total"] + t["amount"], 2)
         totals[name]["count"] += 1
-    return sorted(totals.values(), key=lambda x: x["total"], reverse=True)[:5]
+    return sorted(totals.values(), key=lambda x: x["total"], reverse=True)[:7]

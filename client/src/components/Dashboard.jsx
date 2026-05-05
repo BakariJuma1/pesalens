@@ -14,7 +14,6 @@ import RecurringPayments from './RecurringPayments'
 import WithdrawalTracker from './WithdrawalTracker'
 import PaydayInsight from './PaydayInsight'
 import TopMerchants from './TopMerchants'
-import SendMoneyFrequency from './SendMoneyFrequency'
 import HealthScore from './HealthScore'
 import FulizaInsight from './FulizaInsight'
 import IncomeBreakdown from './IncomeBreakdown'
@@ -43,7 +42,7 @@ export default function Dashboard({ data, onReset }) {
     summary, categories, monthly, transactions, ai_analysis,
     top_expenses, top_recipients, parse_method,
     balance_timeline, day_of_week, recurring_payments,
-    withdrawal_summary, payday_info, top_merchants, send_money_frequency,
+    withdrawal_summary, payday_info, top_merchants,
     fuliza_usage, income_breakdown, health_score,
   } = data
 
@@ -103,7 +102,6 @@ export default function Dashboard({ data, onReset }) {
         <MonthlyChart monthly={monthly} />
         <RecurringPayments data={recurring_payments} />
         <TopMerchants data={top_merchants} />
-        <SendMoneyFrequency data={send_money_frequency} />
         <IncomeBreakdown data={income_breakdown} totalIn={summary.total_in} />
         <TopExpenses expenses={top_expenses} />
         <TopRecipients recipients={top_recipients} />
