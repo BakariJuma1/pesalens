@@ -22,6 +22,7 @@ def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
     balance_trend    = _compute_balance_trend(transactions)
     avg_daily_spend  = _compute_avg_daily_spend(summary, transactions)
     top_recipients   = _compute_top_recipients(transactions)
+    pochi_recipients = _compute_pochi_recipients(transactions)
 
     # Tier 1 & 2 insights
     day_of_week          = _compute_day_of_week(transactions)
@@ -58,6 +59,7 @@ def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
         "ai_analysis": ai_analysis,
         "top_expenses": top_expenses,
         "top_recipients": top_recipients,
+        "pochi_recipients": pochi_recipients,
         "parse_method": parse_method,
         "day_of_week": day_of_week,
         "recurring_payments": recurring_payments,
@@ -298,6 +300,21 @@ def _detect_payday(transactions: List[Dict]) -> Optional[Dict]:
     }
 
 
+def _compute_pochi_recipients(transactions: List[Dict]) -> List[Dict]:
+    totals: Dict[str, Dict] = {}
+    for t in transactions:
+        if t["type"] != "out" or not _POCHI_RE.search(t.get("description", "")):
+            continue
+        name = _extract_recipient_name(t.get("description", ""))
+        if not name:
+            continue
+        if name not in totals:
+            totals[name] = {"name": name, "total": 0.0, "count": 0}
+        totals[name]["total"] = round(totals[name]["total"] + t["amount"], 2)
+        totals[name]["count"] += 1
+    return sorted(totals.values(), key=lambda x: x["total"], reverse=True)[:7]
+
+
 def _compute_send_money_frequency(transactions: List[Dict]) -> List[Dict]:
     freq: Dict[str, Dict] = {}
     for t in transactions:
@@ -484,6 +501,7 @@ def _is_individual(name: str) -> bool:
 _DIRECT_SEND_RE = _re.compile(
     r"^(?:customer transfer to|transfer to|sent to)", _re.IGNORECASE
 )
+_POCHI_RE = _re.compile(r"customer payment to small business", _re.IGNORECASE)
 
 
 def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:

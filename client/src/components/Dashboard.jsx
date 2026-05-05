@@ -40,7 +40,7 @@ export default function Dashboard({ data, onReset }) {
   }
   const {
     summary, categories, monthly, transactions, ai_analysis,
-    top_expenses, top_recipients, parse_method,
+    top_expenses, top_recipients, pochi_recipients, parse_method,
     balance_timeline, day_of_week, recurring_payments,
     withdrawal_summary, payday_info, top_merchants,
     fuliza_usage, income_breakdown, health_score,
@@ -104,7 +104,7 @@ export default function Dashboard({ data, onReset }) {
         <TopMerchants data={top_merchants} />
         <IncomeBreakdown data={income_breakdown} totalIn={summary.total_in} />
         <TopExpenses expenses={top_expenses} />
-        <TopRecipients recipients={top_recipients} />
+        <TopRecipients recipients={top_recipients} pochiRecipients={pochi_recipients} />
         <TransactionsTable transactions={transactions} />
 
         <p className="text-center text-xs text-gray-400 pb-4">

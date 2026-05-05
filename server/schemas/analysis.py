@@ -125,7 +125,8 @@ class AnalysisResponseSchema(Schema):
     transactions   = fields.List(fields.Nested(TransactionSchema))
     ai_analysis    = fields.Str()
     top_expenses   = fields.List(fields.Nested(TopExpenseSchema))
-    top_recipients = fields.List(fields.Nested(TopRecipientSchema))
+    top_recipients   = fields.List(fields.Nested(TopRecipientSchema))
+    pochi_recipients = fields.List(fields.Nested(TopRecipientSchema))
     parse_method   = fields.Str()
     error          = fields.Str(dump_default=None)
 
