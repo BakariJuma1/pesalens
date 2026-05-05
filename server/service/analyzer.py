@@ -481,12 +481,20 @@ def _is_individual(name: str) -> bool:
     return not any(kw in lower for kw in _BUSINESS_KEYWORDS)
 
 
+_DIRECT_SEND_RE = _re.compile(
+    r"^(?:customer transfer to|transfer to|sent to)", _re.IGNORECASE
+)
+
+
 def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
     totals: Dict[str, Dict] = {}
     for t in transactions:
         if t.get("category") != "Send Money" or t["type"] != "out":
             continue
-        name = _extract_recipient_name(t.get("description", ""))
+        desc = t.get("description", "")
+        if not _DIRECT_SEND_RE.match(desc):
+            continue
+        name = _extract_recipient_name(desc)
         if not name or not _is_individual(name):
             continue
         if name not in totals:
