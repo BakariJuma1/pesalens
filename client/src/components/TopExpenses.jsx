@@ -1,5 +1,3 @@
-import { ArrowUpRight } from 'lucide-react'
-
 function fmt(n) {
   return `KES ${Number(n).toLocaleString('en-KE', { maximumFractionDigits: 0 })}`
 }
@@ -11,10 +9,7 @@ export default function TopExpenses({ expenses }) {
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <ArrowUpRight className="w-4 h-4 text-red-400" />
-        <h2 className="text-sm font-semibold text-gray-800">Top 5 Expenses</h2>
-      </div>
+      <h2 className="text-sm font-semibold text-gray-800 mb-4">Top 5 Expenses</h2>
       <ol className="flex flex-col gap-3">
         {expenses.map((exp, i) => (
           <li key={i} className="flex flex-col gap-1">

@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 import html2canvas from 'html2canvas'
-import { X, Download, Share2, Link } from 'lucide-react'
 
 function fmt(n) {
   return `KES ${Number(n).toLocaleString('en-KE', { maximumFractionDigits: 0 })}`
@@ -10,7 +9,7 @@ function getMonthRange(monthly) {
   const months = Object.keys(monthly).sort()
   if (!months.length) return 'Your M-Pesa Statement'
   if (months.length === 1) return months[0]
-  return `${months[0]} – ${months[months.length - 1]}`
+  return `${months[0]} to ${months[months.length - 1]}`
 }
 
 function topCategory(categories) {
@@ -49,7 +48,7 @@ export default function ShareCardModal({ data, onClose }) {
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: 'My M-Pesa Summary',
-          text: 'Check out my M-Pesa spending breakdown — analysed for free at M-Pesa Analyzer.',
+          text: 'Check out my M-Pesa spending breakdown, analysed for free at PesaLense.',
           files: [file],
         })
       } else {
@@ -70,14 +69,13 @@ export default function ShareCardModal({ data, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-800">Share My Month</h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
-            <X className="w-4 h-4 text-gray-500" />
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 text-lg leading-none">
+            &times;
           </button>
         </div>
 
         {/* Card preview */}
         <div className="p-4 flex justify-center bg-gray-50">
-          {/* The actual renderable card — 1080x1080 scaled down */}
           <div
             ref={cardRef}
             style={{
@@ -89,42 +87,28 @@ export default function ShareCardModal({ data, onClose }) {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
+              fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
               color: '#ffffff',
               position: 'relative',
               overflow: 'hidden',
             }}
           >
-            {/* Decorative circle */}
+            {/* Decorative circles */}
             <div style={{
-              position: 'absolute',
-              right: -40,
-              top: -40,
-              width: 180,
-              height: 180,
-              borderRadius: '50%',
+              position: 'absolute', right: -40, top: -40,
+              width: 180, height: 180, borderRadius: '50%',
               background: 'rgba(255,255,255,0.07)',
             }} />
             <div style={{
-              position: 'absolute',
-              right: 20,
-              bottom: -60,
-              width: 140,
-              height: 140,
-              borderRadius: '50%',
+              position: 'absolute', right: 20, bottom: -60,
+              width: 140, height: 140, borderRadius: '50%',
               background: 'rgba(255,255,255,0.05)',
             }} />
 
             {/* Top: brand + month */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-                <div style={{
-                  width: 24, height: 24, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.25)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12,
-                }}>🔒</div>
-                <span style={{ fontSize: 11, opacity: 0.8, fontWeight: 500 }}>M-Pesa Analyzer</span>
+              <div style={{ fontSize: 11, opacity: 0.8, fontWeight: 600, marginBottom: 16, letterSpacing: 1 }}>
+                PESALENSE
               </div>
               <div style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.2 }}>{monthRange}</div>
               <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>M-Pesa Statement Summary</div>
@@ -158,14 +142,14 @@ export default function ShareCardModal({ data, onClose }) {
               {top && (
                 <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', marginBottom: 12 }}>
                   <div style={{ fontSize: 10, opacity: 0.7, marginBottom: 2 }}>BIGGEST SPEND</div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{top.name} — {fmt(top.total)}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{top.name}: {fmt(top.total)}</div>
                 </div>
               )}
             </div>
 
             {/* Footer */}
             <div style={{ fontSize: 10, opacity: 0.6, textAlign: 'center' }}>
-              mpesa-analyzer.vercel.app — Free & Private
+              pesalense.vercel.app · Free and Private
             </div>
           </div>
         </div>
@@ -174,24 +158,21 @@ export default function ShareCardModal({ data, onClose }) {
         <div className="p-4 flex flex-col gap-2">
           <button
             onClick={shareCard}
-            className="w-full flex items-center justify-center gap-2 bg-[#00A86B] hover:bg-[#007A4D] text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+            className="w-full bg-[#00A86B] hover:bg-[#007A4D] text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
           >
-            <Share2 className="w-4 h-4" />
             Share now
           </button>
           <div className="flex gap-2">
             <button
               onClick={downloadPng}
-              className="flex-1 flex items-center justify-center gap-2 border border-gray-200 text-gray-700 hover:border-gray-300 font-medium py-2.5 rounded-xl transition-colors text-sm"
+              className="flex-1 border border-gray-200 text-gray-700 hover:border-gray-300 font-medium py-2.5 rounded-xl transition-colors text-sm"
             >
-              <Download className="w-4 h-4" />
               Download PNG
             </button>
             <button
               onClick={copyLink}
-              className="flex-1 flex items-center justify-center gap-2 border border-gray-200 text-gray-700 hover:border-gray-300 font-medium py-2.5 rounded-xl transition-colors text-sm"
+              className="flex-1 border border-gray-200 text-gray-700 hover:border-gray-300 font-medium py-2.5 rounded-xl transition-colors text-sm"
             >
-              <Link className="w-4 h-4" />
               Copy link
             </button>
           </div>

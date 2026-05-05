@@ -32,11 +32,11 @@ export default function App() {
       const res = await fetch(`${API_BASE}/analyze`, { method: 'POST', body: formData })
 
       if (res.status === 429) {
-        throw new Error('Slow down — try again in an hour.')
+        throw new Error('Slow down. Try again in an hour.')
       }
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
-        throw new Error(json.error || "We couldn't read this file — make sure it's an M-Pesa PDF from Safaricom.")
+        throw new Error(json.error || "We couldn't read this file. Make sure it's an M-Pesa PDF from Safaricom.")
       }
 
       const json = await res.json()

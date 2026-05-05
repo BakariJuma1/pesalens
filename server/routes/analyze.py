@@ -1,7 +1,10 @@
+import logging
 from flask import Blueprint, request, jsonify
 from extensions import limiter
 from schemas.analysis import AnalysisResponseSchema
 from service.analyzer import analyze_statement
+
+logger = logging.getLogger(__name__)
 
 analyze_bp = Blueprint("analyze", __name__)
 
@@ -29,18 +32,24 @@ def analyze():
 
     password = request.form.get("password", "").strip()
 
+    logger.info("Analyse request: filename=%s size=%d bytes password=%s",
+                file.filename, len(pdf_bytes), "yes" if password else "no")
+
     try:
         result = analyze_statement(pdf_bytes, password=password)
+        logger.info("Analysis complete: %d transactions", result["summary"]["total_transactions"])
         return jsonify(_response_schema.dump(result))
     except ValueError as exc:
+        logger.warning("Analysis value error: %s", exc)
         return jsonify({"success": False, "error": str(exc)}), 422
-    except Exception:
+    except Exception as exc:
+        logger.exception("Analysis failed with unexpected error: %s", exc)
         return jsonify({
             "success": False,
-            "error": "We couldn't read this file — make sure it's an M-Pesa PDF from Safaricom.",
+            "error": "We couldn't read this file. Make sure it's an M-Pesa PDF from Safaricom.",
         }), 500
 
 
 @analyze_bp.errorhandler(429)
 def ratelimit_handler(e):
-    return jsonify({"success": False, "error": "Slow down — try again in an hour"}), 429
+    return jsonify({"success": False, "error": "Slow down. Try again in an hour."}), 429

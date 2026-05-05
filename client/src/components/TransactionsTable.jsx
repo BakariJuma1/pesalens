@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const PAGE_SIZE = 15
 
@@ -48,19 +47,15 @@ export default function TransactionsTable({ transactions }) {
           All Transactions
           <span className="ml-2 text-xs font-normal text-gray-400">({filtered.length})</span>
         </h2>
-        <div className="relative">
-          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search transactions..."
-            value={query}
-            onChange={handleSearch}
-            className="pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg w-full sm:w-56 focus:outline-none focus:border-[#00A86B] focus:ring-1 focus:ring-[#00A86B]/20"
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Search transactions..."
+          value={query}
+          onChange={handleSearch}
+          className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg w-full sm:w-56 focus:outline-none focus:border-[#00A86B] focus:ring-1 focus:ring-[#00A86B]/20"
+        />
       </div>
 
-      {/* Table — scroll on mobile */}
       <div className="overflow-x-auto -mx-5 px-5">
         <table className="w-full text-sm min-w-[600px]">
           <thead>
@@ -101,7 +96,6 @@ export default function TransactionsTable({ transactions }) {
         </table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
           <p className="text-xs text-gray-400">
@@ -111,16 +105,16 @@ export default function TransactionsTable({ transactions }) {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={safePage === 1}
-              className="p-1.5 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-30 hover:border-[#00A86B] hover:text-[#00A86B] transition-colors"
+              className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-30 hover:border-[#00A86B] hover:text-[#00A86B] transition-colors text-xs font-medium"
             >
-              <ChevronLeft className="w-4 h-4" />
+              Prev
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage === totalPages}
-              className="p-1.5 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-30 hover:border-[#00A86B] hover:text-[#00A86B] transition-colors"
+              className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-30 hover:border-[#00A86B] hover:text-[#00A86B] transition-colors text-xs font-medium"
             >
-              <ChevronRight className="w-4 h-4" />
+              Next
             </button>
           </div>
         </div>

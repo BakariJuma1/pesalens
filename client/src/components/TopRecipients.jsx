@@ -1,19 +1,11 @@
-import { Users } from 'lucide-react'
-
 export default function TopRecipients({ recipients }) {
   if (!recipients || recipients.length === 0) return null
 
   const max = recipients[0].total
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-          <Users className="w-4 h-4 text-emerald-600" />
-        </div>
-        <h2 className="font-semibold text-gray-900 text-sm">Who You Send Money To Most</h2>
-      </div>
-
+    <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <h2 className="text-sm font-semibold text-gray-800 mb-4">Who You Send Money To Most</h2>
       <div className="flex flex-col gap-3">
         {recipients.map((r, i) => (
           <div key={i}>
