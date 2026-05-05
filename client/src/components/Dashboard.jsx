@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { exportToPdf } from '../utils/exportPdf'
 import SummaryStats from './SummaryStats'
 import AIAnalysisCard from './AIAnalysisCard'
 import CategoryChart from './CategoryChart'
@@ -30,6 +31,14 @@ function Logo() {
 
 export default function Dashboard({ data, onReset }) {
   const [showShare, setShowShare] = useState(false)
+  const [exporting, setExporting] = useState(false)
+
+  function handleExport() {
+    setExporting(true)
+    setTimeout(() => {
+      try { exportToPdf(data) } finally { setExporting(false) }
+    }, 50)
+  }
   const {
     summary, categories, monthly, transactions, ai_analysis,
     top_expenses, top_recipients, parse_method,
@@ -48,6 +57,13 @@ export default function Dashboard({ data, onReset }) {
             <span className="font-bold text-gray-900 text-sm tracking-tight">PesaLense</span>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 transition-colors text-xs font-medium disabled:opacity-50"
+            >
+              {exporting ? 'Exporting...' : 'Export PDF'}
+            </button>
             <button
               onClick={() => setShowShare(true)}
               className="bg-[#00A86B] hover:bg-[#007A4D] text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
