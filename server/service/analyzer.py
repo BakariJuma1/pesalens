@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from utils.pdf_parser import parse_pdf
 from service.gemini import generate_analysis
@@ -9,15 +9,22 @@ def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
 
     if len(transactions) < 5:
         raise ValueError(
-            "Not enough transactions to analyse — try uploading a full monthly statement."
+            "Not enough transactions to analyse. Try uploading a full monthly statement."
         )
 
     summary = _compute_summary(transactions)
     categories = _compute_categories(transactions)
     monthly = _compute_monthly(transactions)
     top_expenses = _compute_top_expenses(transactions)
-    ai_analysis = generate_analysis(summary, categories, top_expenses)
+    balance_trend = _compute_balance_trend(transactions)
+    avg_daily_spend = _compute_avg_daily_spend(summary, transactions)
     top_recipients = _compute_top_recipients(transactions)
+
+    ai_analysis = generate_analysis(
+        summary, categories, top_expenses,
+        balance_trend=balance_trend,
+        avg_daily_spend=avg_daily_spend,
+    )
 
     return {
         "success": True,
@@ -82,11 +89,36 @@ def _compute_top_expenses(transactions: List[Dict]) -> List[Dict]:
     ]
 
 
+def _compute_balance_trend(transactions: List[Dict]) -> Dict:
+    if not transactions:
+        return {}
+    sorted_tx = sorted(
+        transactions,
+        key=lambda x: (x.get("date", ""), x.get("time", "")),
+    )
+    first = sorted_tx[0]
+    opening = (
+        first["balance"] + first["amount"]
+        if first["type"] == "out"
+        else first["balance"] - first["amount"]
+    )
+    closing = sorted_tx[-1]["balance"]
+    return {
+        "opening": round(opening, 2),
+        "closing": round(closing, 2),
+        "change": round(closing - opening, 2),
+    }
+
+
+def _compute_avg_daily_spend(summary: Dict, transactions: List[Dict]) -> float:
+    dates = {t["date"] for t in transactions if t.get("date")}
+    if not dates:
+        return 0.0
+    return round(summary["total_out"] / len(dates), 0)
+
+
 import re as _re
 
-# Strip the transfer prefix then an optional phone number to get the recipient name.
-# Handles: "Customer Transfer to - 0712345678 JOHN DOE"
-#      and: "Customer Transfer to - JOHN DOE"  (no phone number)
 _TX_PREFIX_RE = _re.compile(
     r"(?:customer transfer to|transfer to|sent to)\s*[-–]?\s*",
     _re.IGNORECASE,
@@ -97,7 +129,6 @@ _PHONE_PREFIX_RE = _re.compile(r"^(?:2547|2541|07|01)\d+\s*", _re.IGNORECASE)
 def _extract_recipient_name(desc: str) -> str:
     name = _TX_PREFIX_RE.sub("", desc).strip()
     name = _PHONE_PREFIX_RE.sub("", name).strip()
-    # Skip if nothing meaningful is left (just dashes, digits, or very short)
     if not name or name in {"-", "–"} or len(name) < 2 or name.isdigit():
         return ""
     return name.title()
