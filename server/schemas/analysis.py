@@ -89,6 +89,34 @@ class SendFrequencySchema(Schema):
     total = fields.Float()
 
 
+class FulizaUsageSchema(Schema):
+    used             = fields.Bool()
+    total_borrowed   = fields.Float()
+    total_repaid     = fields.Float()
+    net_outstanding  = fields.Float()
+    borrow_count     = fields.Int()
+    repay_count      = fields.Int()
+
+
+class IncomeSourceSchema(Schema):
+    name  = fields.Str()
+    total = fields.Float()
+    count = fields.Int()
+
+
+class HealthScoreComponentSchema(Schema):
+    label     = fields.Str()
+    score     = fields.Int()
+    max_score = fields.Int()
+    note      = fields.Str()
+
+
+class HealthScoreSchema(Schema):
+    score      = fields.Int()
+    label      = fields.Str()
+    components = fields.List(fields.Nested(HealthScoreComponentSchema))
+
+
 class AnalysisResponseSchema(Schema):
     success        = fields.Bool()
     summary        = fields.Nested(SummarySchema)
@@ -111,3 +139,8 @@ class AnalysisResponseSchema(Schema):
     payday_info          = fields.Nested(PaydayInfoSchema, dump_default=None)
     top_merchants        = fields.List(fields.Nested(MerchantSchema))
     send_money_frequency = fields.List(fields.Nested(SendFrequencySchema))
+
+    # Tier 3
+    fuliza_usage      = fields.Nested(FulizaUsageSchema, dump_default=None)
+    income_breakdown  = fields.List(fields.Nested(IncomeSourceSchema))
+    health_score      = fields.Nested(HealthScoreSchema, dump_default=None)

@@ -14,6 +14,9 @@ import WithdrawalTracker from './WithdrawalTracker'
 import PaydayInsight from './PaydayInsight'
 import TopMerchants from './TopMerchants'
 import SendMoneyFrequency from './SendMoneyFrequency'
+import HealthScore from './HealthScore'
+import FulizaInsight from './FulizaInsight'
+import IncomeBreakdown from './IncomeBreakdown'
 
 function Logo() {
   return (
@@ -32,6 +35,7 @@ export default function Dashboard({ data, onReset }) {
     top_expenses, top_recipients, parse_method,
     balance_timeline, day_of_week, recurring_payments,
     withdrawal_summary, payday_info, top_merchants, send_money_frequency,
+    fuliza_usage, income_breakdown, health_score,
   } = data
 
   return (
@@ -72,16 +76,19 @@ export default function Dashboard({ data, onReset }) {
         </div>
 
         <SummaryStats summary={summary} />
+        <HealthScore data={health_score} />
         <AIAnalysisCard analysis={ai_analysis} parseMethod={parse_method} />
         <BalanceCurve data={balance_timeline} />
         <CategoryChart categories={categories} />
         <WithdrawalTracker data={withdrawal_summary} />
+        <FulizaInsight data={fuliza_usage} />
         <PaydayInsight data={payday_info} />
         <DayOfWeekChart data={day_of_week} />
         <MonthlyChart monthly={monthly} />
         <RecurringPayments data={recurring_payments} />
         <TopMerchants data={top_merchants} />
         <SendMoneyFrequency data={send_money_frequency} />
+        <IncomeBreakdown data={income_breakdown} totalIn={summary.total_in} />
         <TopExpenses expenses={top_expenses} />
         <TopRecipients recipients={top_recipients} />
         <TransactionsTable transactions={transactions} />

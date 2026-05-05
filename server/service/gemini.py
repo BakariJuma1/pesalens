@@ -68,12 +68,13 @@ def generate_analysis(
     recurring_payments: List = None,
     payday_info: Dict = None,
     withdrawal_summary: Dict = None,
+    fuliza_usage: Dict = None,
 ) -> str:
     try:
         prompt = _build_user_prompt(
             summary, categories, top_expenses,
             balance_trend, avg_daily_spend,
-            recurring_payments, payday_info, withdrawal_summary,
+            recurring_payments, payday_info, withdrawal_summary, fuliza_usage,
         )
         return _call_groq(_SYSTEM_PROMPT, prompt, max_tokens=600)
     except Exception as exc:
@@ -127,6 +128,7 @@ def _build_user_prompt(
     recurring_payments: List = None,
     payday_info: Dict = None,
     withdrawal_summary: Dict = None,
+    fuliza_usage: Dict = None,
 ) -> str:
     net_label = "saved" if summary["net"] >= 0 else "overspent"
     total_out = summary["total_out"] or 1
@@ -179,6 +181,14 @@ def _build_user_prompt(
             for r in recurring_payments[:4]
         )
         prompt += f"\nDetected recurring payments:\n{rec_lines}\n"
+
+    if fuliza_usage and fuliza_usage.get("used"):
+        prompt += (
+            f"\nFuliza usage: borrowed {fuliza_usage['borrow_count']}x "
+            f"(KES {fuliza_usage['total_borrowed']:,.0f}), "
+            f"repaid KES {fuliza_usage['total_repaid']:,.0f}, "
+            f"outstanding KES {fuliza_usage['net_outstanding']:,.0f}\n"
+        )
 
     prompt += "\nAnalyse my spending with the structure I gave you."
     return prompt
