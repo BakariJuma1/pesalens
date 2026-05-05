@@ -131,8 +131,8 @@ def _fallback_analysis(summary: Dict, categories: Dict) -> str:
     net_label = "saved" if summary["net"] >= 0 else "overspent"
     return (
         f"You brought in KES {summary['total_in']:,.0f} and spent "
-        f"KES {summary['total_out']:,.0f} — you {net_label} "
+        f"KES {summary['total_out']:,.0f}. You {net_label} "
         f"KES {abs(summary['net']):,.0f}. "
         f"Most of your spending went to {top_cat}. "
-        f"Add your Gemini API key to unlock a full AI-powered analysis."
+        f"AI analysis is temporarily unavailable due to rate limiting. Try again in a few minutes."
     )
