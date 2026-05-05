@@ -452,16 +452,20 @@ def _compute_health_score(
 
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
-_TX_PREFIX_RE  = _re.compile(
-    r"(?:customer transfer to|transfer to|sent to)\s*[-–]?\s*", _re.IGNORECASE
+_TX_PREFIX_RE = _re.compile(
+    r"(?:customer payment to small business from|customer transfer to|transfer to|sent to)"
+    r"\s*[-–]?\s*",
+    _re.IGNORECASE,
 )
-_PHONE_PREFIX_RE = _re.compile(r"^(?:2547|2541|07|01)\d+\s*", _re.IGNORECASE)
+# matches full or masked phone numbers: 0712345678 / 254712345678 / 2547***678
+_PHONE_PREFIX_RE = _re.compile(r"^(?:2547|2541|07|01)[0-9*]+\s*", _re.IGNORECASE)
 
 
 def _extract_recipient_name(desc: str) -> str:
     name = _TX_PREFIX_RE.sub("", desc).strip()
     name = _PHONE_PREFIX_RE.sub("", name).strip()
-    if not name or name in {"-", "–"} or len(name) < 2 or name.isdigit():
+    name = name.lstrip("-–").strip()
+    if not name or len(name) < 2 or name.isdigit():
         return ""
     return name.title()
 
