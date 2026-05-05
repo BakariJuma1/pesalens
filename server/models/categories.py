@@ -25,6 +25,7 @@ CATEGORY_PATTERNS = {
         "paybill",
         "business no",
         "account no",
+        "business payment",
     ],
     "Buy Goods": [
         "merchant payment online",

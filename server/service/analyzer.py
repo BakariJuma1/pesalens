@@ -355,11 +355,13 @@ def _detect_fuliza(transactions: List[Dict]) -> Dict:
 
 def _extract_sender_name(desc: str) -> str:
     cleaned = _re.sub(
-        r"(?:customer transfer from|transfer from|payment from|received from|from)\s*[-–]?\s*",
+        r"(?:customer transfer from|transfer from|payment from|received from|funds|from)"
+        r"\s*[-–]?\s*",
         "", desc, flags=_re.IGNORECASE,
     ).strip()
     cleaned = _PHONE_PREFIX_RE.sub("", cleaned).strip()
-    if not cleaned or cleaned in {"-", "–"} or len(cleaned) < 2 or cleaned.isdigit():
+    cleaned = cleaned.lstrip("-–").strip()
+    if not cleaned or len(cleaned) < 2 or cleaned.isdigit():
         return ""
     return cleaned.title()[:35]
 
