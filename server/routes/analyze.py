@@ -1,7 +1,7 @@
 import logging
 from flask import Blueprint, request, jsonify
 from extensions import limiter
-from schemas.analysis import AnalysisResponseSchema
+from schemas.response import AnalysisResponseSchema
 from service.analyzer import analyze_statement
 
 logger = logging.getLogger(__name__)

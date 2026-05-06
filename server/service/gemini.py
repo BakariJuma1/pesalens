@@ -110,7 +110,7 @@ def extract_transactions_ai(raw_text: str) -> List[Dict]:
                 text = text[4:]
 
         transactions = json.loads(text)
-        from utils.pdf_parser import _categorise
+        from utils.parser_helpers import _categorise
         for tx in transactions:
             if "category" not in tx:
                 tx["category"] = _categorise(tx.get("description", ""), tx.get("type", "out"))
