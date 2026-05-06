@@ -66,7 +66,6 @@ export default function ShareCardModal({ data, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-800">Share My Month</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 text-lg leading-none">
@@ -74,7 +73,6 @@ export default function ShareCardModal({ data, onClose }) {
           </button>
         </div>
 
-        {/* Card preview */}
         <div className="p-4 flex justify-center bg-gray-50">
           <div
             ref={cardRef}
@@ -93,7 +91,6 @@ export default function ShareCardModal({ data, onClose }) {
               overflow: 'hidden',
             }}
           >
-            {/* Decorative circles */}
             <div style={{
               position: 'absolute', right: -40, top: -40,
               width: 180, height: 180, borderRadius: '50%',
@@ -105,7 +102,6 @@ export default function ShareCardModal({ data, onClose }) {
               background: 'rgba(255,255,255,0.05)',
             }} />
 
-            {/* Top: brand + month */}
             <div>
               <div style={{ fontSize: 11, opacity: 0.8, fontWeight: 600, marginBottom: 16, letterSpacing: 1 }}>
                 PESALENSE
@@ -114,7 +110,6 @@ export default function ShareCardModal({ data, onClose }) {
               <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>M-Pesa Statement Summary</div>
             </div>
 
-            {/* Stats */}
             <div>
               <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
                 <div style={{ flex: 1, background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 12px' }}>
@@ -127,7 +122,6 @@ export default function ShareCardModal({ data, onClose }) {
                 </div>
               </div>
 
-              {/* Savings bar */}
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11, opacity: 0.85 }}>
                   <span>Savings Rate</span>
@@ -138,7 +132,6 @@ export default function ShareCardModal({ data, onClose }) {
                 </div>
               </div>
 
-              {/* Top category */}
               {top && (
                 <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', marginBottom: 12 }}>
                   <div style={{ fontSize: 10, opacity: 0.7, marginBottom: 2 }}>BIGGEST SPEND</div>
@@ -147,14 +140,12 @@ export default function ShareCardModal({ data, onClose }) {
               )}
             </div>
 
-            {/* Footer */}
             <div style={{ fontSize: 10, opacity: 0.6, textAlign: 'center' }}>
               pesalense.vercel.app · Free and Private
             </div>
           </div>
         </div>
 
-        {/* Action buttons */}
         <div className="p-4 flex flex-col gap-2">
           <button
             onClick={shareCard}

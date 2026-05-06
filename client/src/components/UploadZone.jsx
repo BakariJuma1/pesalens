@@ -96,7 +96,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
   return (
     <div className="min-h-screen bg-white flex flex-col">
 
-      {/* Navbar */}
       <nav className="sticky top-0 z-20 bg-white border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -112,7 +111,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
         </div>
       </nav>
 
-      {/* Hero */}
       <section className="bg-white pt-14 pb-10 px-4 border-b border-gray-100">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-xs font-semibold text-[#00A86B] mb-5 uppercase tracking-widest">
@@ -126,7 +124,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
             Upload your Safaricom statement and get instant AI-powered insights, charts, spending breakdown, and plain-English advice. No account. Nothing saved.
           </p>
 
-          {/* Upload form */}
           <div ref={uploadRef} className="bg-white rounded-2xl border border-gray-200 p-6 text-left max-w-xl mx-auto">
             {backendStatus === 'waking' && (
               <div className="mb-4 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
@@ -135,7 +132,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
             )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {/* File field */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-600">M-Pesa Statement PDF</label>
                 <div className="flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 bg-gray-50">
@@ -161,7 +157,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-600">
                   PDF Password{' '}
@@ -204,7 +199,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
         </div>
       </section>
 
-      {/* Features */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">Everything you need to understand your money</h2>
@@ -254,7 +248,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
         </div>
       </section>
 
-      {/* How it works */}
       <section className="py-16 px-4 bg-gray-50 border-y border-gray-100">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">How it works</h2>
@@ -295,7 +288,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
         </div>
       </section>
 
-      {/* FAQs */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">Frequently asked questions</h2>
@@ -306,7 +298,6 @@ export default function UploadZone({ onUpload, isLoading, backendStatus }) {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-gray-50 border-t border-gray-100 py-8 px-4">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">

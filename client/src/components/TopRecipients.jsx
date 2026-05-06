@@ -47,7 +47,6 @@ export default function TopRecipients({ recipients, pochiRecipients }) {
     <div className="bg-white rounded-xl border border-gray-100 p-5">
       <h2 className="text-sm font-semibold text-gray-800 mb-4">Who You Send Money To Most</h2>
 
-      {/* Tabs */}
       <div className="flex gap-1 mb-4 bg-gray-100 rounded-lg p-1">
         <button
           onClick={() => setTab('direct')}

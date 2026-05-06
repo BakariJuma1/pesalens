@@ -48,7 +48,6 @@ export default function Dashboard({ data, onReset }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
       <header className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -79,7 +78,6 @@ export default function Dashboard({ data, onReset }) {
         </div>
       </header>
 
-      {/* Content */}
       <main className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <p className="text-xs text-gray-400">

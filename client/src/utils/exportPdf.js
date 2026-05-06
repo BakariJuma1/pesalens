@@ -29,7 +29,6 @@ export function exportToPdf(data) {
   const CW   = W - M * 2
   let   y    = 0
 
-  // ── Header ────────────────────────────────────────────────────────────────
   doc.setFillColor(...GREEN)
   doc.rect(0, 0, W, 22, 'F')
   doc.setTextColor(...WHITE)
@@ -43,7 +42,6 @@ export function exportToPdf(data) {
 
   y = 32
 
-  // ── Health score ──────────────────────────────────────────────────────────
   if (health_score) {
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
@@ -61,7 +59,6 @@ export function exportToPdf(data) {
     doc.setTextColor(...GRAY500)
     doc.text(`/ 100  ·  ${health_score.label}`, M + 17, y + 13)
 
-    // component bars
     let bx = M + 55
     const compW = (CW - 55 - 2) / (health_score.components?.length || 1)
     ;(health_score.components || []).forEach((c) => {
@@ -81,7 +78,6 @@ export function exportToPdf(data) {
     y += 22
   }
 
-  // ── Summary stats ─────────────────────────────────────────────────────────
   doc.setFontSize(11)
   doc.setFont('helvetica', 'bold')
   doc.setTextColor(...GRAY900)
@@ -110,7 +106,6 @@ export function exportToPdf(data) {
   })
   y += 22
 
-  // ── Extra stats row ───────────────────────────────────────────────────────
   const extras = []
   if (withdrawal_summary?.total_withdrawn > 0)
     extras.push({ label: 'Cash Withdrawn', value: fmt(withdrawal_summary.total_withdrawn) })
@@ -139,7 +134,6 @@ export function exportToPdf(data) {
     y += 20
   }
 
-  // ── Categories ────────────────────────────────────────────────────────────
   if (categories && Object.keys(categories).length) {
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
@@ -178,7 +172,6 @@ export function exportToPdf(data) {
     y += 4
   }
 
-  // ── AI Analysis ───────────────────────────────────────────────────────────
   if (ai_analysis) {
     if (y > 220) { doc.addPage(); y = 20 }
 
@@ -197,7 +190,6 @@ export function exportToPdf(data) {
     y += cap * 4.2 + 6
   }
 
-  // ── Top expenses ──────────────────────────────────────────────────────────
   if (top_expenses?.length) {
     if (y > 240) { doc.addPage(); y = 20 }
 
@@ -218,7 +210,6 @@ export function exportToPdf(data) {
     })
   }
 
-  // ── Footer ────────────────────────────────────────────────────────────────
   const pages = doc.getNumberOfPages()
   for (let p = 1; p <= pages; p++) {
     doc.setPage(p)

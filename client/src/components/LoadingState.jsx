@@ -29,7 +29,6 @@ export default function LoadingState() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Navbar */}
       <nav className="bg-white border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-2">
           <Logo />
@@ -37,7 +36,6 @@ export default function LoadingState() {
         </div>
       </nav>
 
-      {/* Loading content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="flex flex-col items-center gap-6">
           <div className="w-12 h-12 rounded-full border-4 border-gray-100 border-t-[#00A86B] animate-spin" />

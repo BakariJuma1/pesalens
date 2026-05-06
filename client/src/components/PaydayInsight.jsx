@@ -30,7 +30,6 @@ export default function PaydayInsight({ data }) {
           </div>
         </div>
 
-        {/* Progress bar */}
         <div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div

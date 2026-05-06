@@ -130,18 +130,13 @@ class AnalysisResponseSchema(Schema):
     parse_method   = fields.Str()
     error          = fields.Str(dump_default=None)
 
-    # Tier 1
     day_of_week        = fields.List(fields.Nested(DayOfWeekSchema))
     recurring_payments = fields.List(fields.Nested(RecurringPaymentSchema))
     balance_timeline   = fields.List(fields.Nested(BalancePointSchema))
     withdrawal_summary = fields.Nested(WithdrawalSummarySchema)
-
-    # Tier 2
     payday_info          = fields.Nested(PaydayInfoSchema, dump_default=None)
     top_merchants        = fields.List(fields.Nested(MerchantSchema))
     send_money_frequency = fields.List(fields.Nested(SendFrequencySchema))
-
-    # Tier 3
     fuliza_usage      = fields.Nested(FulizaUsageSchema, dump_default=None)
     income_breakdown  = fields.List(fields.Nested(IncomeSourceSchema))
     health_score      = fields.Nested(HealthScoreSchema, dump_default=None)

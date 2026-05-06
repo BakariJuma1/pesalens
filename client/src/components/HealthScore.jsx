@@ -15,7 +15,6 @@ export default function HealthScore({ data }) {
       <h2 className="text-sm font-semibold text-gray-800 mb-1">Financial Health Score</h2>
       <p className="text-xs text-gray-400 mb-4">Based on savings rate, balance trend, spending habits and debt</p>
 
-      {/* Score hero */}
       <div className={`flex items-center gap-4 rounded-xl p-4 mb-4 ${colors.bg} border ${colors.border}`}>
         <div className="flex-shrink-0">
           <p className={`text-4xl font-black ${colors.text}`}>{score}</p>
@@ -32,7 +31,6 @@ export default function HealthScore({ data }) {
         </div>
       </div>
 
-      {/* Breakdown */}
       <div className="flex flex-col gap-2.5">
         {components.map((c, i) => (
           <div key={i}>

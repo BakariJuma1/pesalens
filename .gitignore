@@ -13,3 +13,13 @@ client/dist/
 # IDE
 .vscode/
 .idea/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dev scripts
+debug_statement.py

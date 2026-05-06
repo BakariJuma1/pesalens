@@ -24,7 +24,6 @@ def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
     top_recipients   = _compute_top_recipients(transactions)
     pochi_recipients = _compute_pochi_recipients(transactions)
 
-    # Tier 1 & 2 insights
     day_of_week          = _compute_day_of_week(transactions)
     recurring_payments   = _detect_recurring(transactions)
     balance_timeline     = _compute_balance_timeline(transactions)
@@ -33,7 +32,6 @@ def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
     top_merchants        = _compute_top_merchants(transactions)
     send_money_frequency = _compute_send_money_frequency(transactions)
 
-    # Tier 3 insights
     fuliza_usage     = _detect_fuliza(transactions)
     income_breakdown = _compute_income_breakdown(transactions)
     health_score     = _compute_health_score(
@@ -73,8 +71,6 @@ def analyze_statement(pdf_bytes: bytes, password: str = "") -> Dict:
         "health_score": health_score,
     }
 
-
-# ── Existing computations ────────────────────────────────────────────────────
 
 def _compute_summary(transactions: List[Dict]) -> Dict:
     total_in  = sum(t["amount"] for t in transactions if t["type"] == "in")
@@ -147,8 +143,6 @@ def _compute_avg_daily_spend(summary: Dict, transactions: List[Dict]) -> float:
     return round(summary["total_out"] / len(dates), 0) if dates else 0.0
 
 
-# ── Tier 1 ───────────────────────────────────────────────────────────────────
-
 def _compute_day_of_week(transactions: List[Dict]) -> List[Dict]:
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     spend  = {d: 0.0 for d in days}
@@ -217,8 +211,6 @@ def _compute_withdrawal_summary(summary: Dict, transactions: List[Dict]) -> Dict
         "cash_percentage":   round(total_cash / total_out * 100, 1),
     }
 
-
-# ── Tier 2 ───────────────────────────────────────────────────────────────────
 
 _KNOWN_PAYBILL = {
     "888880": "KPLC",
@@ -330,8 +322,6 @@ def _compute_send_money_frequency(transactions: List[Dict]) -> List[Dict]:
     return sorted(freq.values(), key=lambda x: x["count"], reverse=True)[:5]
 
 
-# ── Tier 3 ───────────────────────────────────────────────────────────────────
-
 def _detect_fuliza(transactions: List[Dict]) -> Dict:
     borrowed = [
         t for t in transactions
@@ -393,7 +383,6 @@ def _compute_health_score(
     components = []
     total = 0
 
-    # Savings rate — 30 pts
     sr = summary.get("savings_rate", 0)
     if sr >= 20:
         s, note = 30, f"{sr}% savings rate — excellent"
@@ -406,7 +395,6 @@ def _compute_health_score(
     components.append({"label": "Savings Rate", "score": s, "max_score": 30, "note": note})
     total += s
 
-    # Balance trend — 20 pts
     opening = (balance_trend or {}).get("opening", 1) or 1
     change  = (balance_trend or {}).get("change", 0)
     pct     = change / opening * 100 if opening else 0
@@ -421,7 +409,6 @@ def _compute_health_score(
     components.append({"label": "Balance Trend", "score": s, "max_score": 20, "note": note})
     total += s
 
-    # Payday discipline — 20 pts
     velocity = (payday_info or {}).get("velocity_pct", 0)
     if velocity < 40:
         s, note = 20, f"Spent {velocity}% of income week after payday"
@@ -434,7 +421,6 @@ def _compute_health_score(
     components.append({"label": "Payday Discipline", "score": s, "max_score": 20, "note": note})
     total += s
 
-    # Digital spending — 15 pts
     cash_pct = (withdrawal_summary or {}).get("cash_percentage", 0)
     if cash_pct <= 10:
         s, note = 15, f"Only {cash_pct}% cash — spending mostly trackable"
@@ -445,7 +431,6 @@ def _compute_health_score(
     components.append({"label": "Digital Spending", "score": s, "max_score": 15, "note": note})
     total += s
 
-    # Debt-free (Fuliza) — 15 pts
     if not (fuliza or {}).get("used"):
         s, note = 15, "No Fuliza usage detected"
     elif (fuliza or {}).get("net_outstanding", 0) <= 0:
@@ -469,7 +454,6 @@ def _compute_health_score(
     return {"score": total, "label": label, "components": components}
 
 
-# ── Shared helpers ────────────────────────────────────────────────────────────
 
 _TX_PREFIX_RE = _re.compile(
     r"(?:customer payment to small business from|customer transfer to|transfer to|sent to)"
@@ -510,7 +494,6 @@ def _compute_top_recipients(transactions: List[Dict]) -> List[Dict]:
         if t.get("category") != "Send Money" or t["type"] != "out":
             continue
         desc = t.get("description", "")
-        # exclude Pochi payments (handled separately) and transaction charges
         if _POCHI_RE.search(desc) or _CHARGE_RE.search(desc):
             continue
         name = _extract_recipient_name(desc)

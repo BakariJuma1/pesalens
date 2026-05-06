@@ -4,13 +4,11 @@ from typing import List, Dict, Tuple, Optional
 
 from models.categories import CATEGORY_PATTERNS
 
-# Safaricom table columns: Receipt | Completion Time | Details | Status | Paid In | Withdrawn | Balance
 _RECEIPT_RE = re.compile(r'^[A-Z0-9]{6,}$')
 _AMOUNT_RE = re.compile(r'^[\d,]+\.\d{2}$')
 _DATE_TIME_RE = re.compile(r'(\d{2}/\d{2}/\d{4})\s+(\d{2}:\d{2}:\d{2})')
 _DATE_NEW_RE = re.compile(r'(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})')
 
-# Fallback regex for text-based extraction
 _PATTERN_NEW = re.compile(
     r"([A-Z0-9]{6,})\s+"
     r"(\d{4}-\d{2}-\d{2})\s+"
@@ -39,12 +37,10 @@ def parse_pdf(pdf_bytes: bytes, password: str = "") -> Tuple[List[Dict], str]:
     try:
         import pdfplumber
         with pdfplumber.open(io.BytesIO(pdf_bytes), **open_kwargs) as pdf:
-            # Try table extraction first — preserves full description including recipient names
             transactions = _extract_via_tables(pdf)
             if len(transactions) >= 5:
                 return transactions, "regex"
 
-            # Fall back to text extraction
             pages_text = []
             for page in pdf.pages:
                 try:
@@ -78,11 +74,6 @@ def parse_pdf(pdf_bytes: bytes, password: str = "") -> Tuple[List[Dict], str]:
 
 
 def _extract_via_tables(pdf) -> List[Dict]:
-    """
-    Parse the Safaricom statement using pdfplumber table detection.
-    Table columns: Receipt | Completion Time | Details | Status | Paid In | Withdrawn | Balance
-    This gives the full description including recipient names.
-    """
     transactions = []
     for page in pdf.pages:
         try:
@@ -103,14 +94,12 @@ def _parse_table_row(row) -> Optional[Dict]:
 
     cells = [str(c or "").strip() for c in row]
 
-    # Must have a receipt number
     receipt = next((c for c in cells if _RECEIPT_RE.match(c)), None)
     if not receipt:
         return None
 
     receipt_idx = cells.index(receipt)
 
-    # Extract date + time — may be a combined cell or separate
     date_str = None
     time_str = None
     for cell in cells[receipt_idx:]:
@@ -128,7 +117,6 @@ def _parse_table_row(row) -> Optional[Dict]:
     if not date_str:
         return None
 
-    # Collect numeric cells (amounts)
     numeric = [(i, c) for i, c in enumerate(cells) if _AMOUNT_RE.match(c.replace(",", ""))]
     if len(numeric) < 2:
         return None
@@ -136,7 +124,6 @@ def _parse_table_row(row) -> Optional[Dict]:
     balance_str = numeric[-1][1]
     balance = float(balance_str.replace(",", ""))
 
-    # Safaricom has separate Paid In / Withdrawn columns
     # If 3+ numeric cells: [..., paid_in, withdrawn, balance]
     amount = 0.0
     tx_type = "out"
@@ -154,15 +141,13 @@ def _parse_table_row(row) -> Optional[Dict]:
         else:
             return None
     else:
-        # Single amount column — infer type from description
         amount_str = numeric[-2][1]
         amount = float(amount_str.replace(",", ""))
-        tx_type = "out"  # will be refined below
+        tx_type = "out"
 
     if amount <= 0:
         return None
 
-    # Description is the cell that is NOT a receipt, date, amount, or status
     known_values = {receipt, balance_str}
     known_values.update(c for _, c in numeric)
     skip_words = {"completed", "failed", "cancelled", "receipt", "details",

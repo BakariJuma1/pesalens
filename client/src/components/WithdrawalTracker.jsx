@@ -17,7 +17,6 @@ export default function WithdrawalTracker({ data }) {
       </p>
 
       <div className="flex flex-col gap-3">
-        {/* Bar */}
         <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
           <div
             className="h-full bg-[#00A86B] rounded-l-full transition-all"
